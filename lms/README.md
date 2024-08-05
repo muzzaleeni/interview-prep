@@ -69,12 +69,9 @@ Design a library management system to handle basic operations such as adding boo
 
 ### 5. Notification System
 #### Classes:
-- **Notification (Base Class)**
-  - `virtual void update()`
-- **EmailNotification (Derived Class)**
-  - Overrides `update()`
-- **SMSNotification (Derived Class)**
-  - Overrides `update()`
+- **EmailNotification**
+  - `update()`
+
 
 #### Patterns:
 - **Observer Pattern:** To notify members about book availability.

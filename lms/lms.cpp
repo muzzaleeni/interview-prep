@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <vector>
 
 class Book {
 protected:
@@ -68,9 +69,81 @@ public:
     }
 };
 
-int main() {
-    RegularBook book1("abc", "ABC", "0151");
-    ReferenceBook book2("abcd", "ABCD", "0152");
-    book1.displayInfo();
-    book2.displayInfo();
-}
+class Member {
+protected:
+    std::string name;
+    int memberId;
+    std::string email;
+
+public:
+    Member(std::string name, int memberId, std::string email) {
+        this->name = name;
+        this->memberId = memberId;
+        this->email = email;
+    }
+
+    virtual void displayInfo() {
+        std::cout << "Name: " << name << "\n"
+                  << "Member ID: " << memberId << "\n\n";
+    }
+};
+
+class Student : public Member {
+private:
+    int year;
+    std::string major;
+
+public:
+    Student(std::string name, int memberId, std::string email, int year, std:: string major) : Member(name, memberId, email) {
+        this->year = year;
+        this->major = major;
+    };
+
+    void displayInfo() {
+        Member::displayInfo();
+        std::cout << "This is a student studying "
+                  << major << "in year " << year << "\n\n";
+    }
+};
+
+class Faculty : public Member {
+private:
+    std::string department;
+    std::string position;
+
+public:
+    Faculty(std::string name, int memberId, std::string email, std::string department, std:: string position) : Member(name, memberId, email) {
+        this->department = department;
+        this->position = position;
+    };
+
+    void displayInfo() {
+        Member::displayInfo();
+        std::cout << "This is a faculty member from "
+                  << department << "department working as a " << position << "\n\n";
+    }
+};
+
+class Library {
+private:
+    static Library* library;
+    std::vector<Book*> books;
+    std::vector<Member*> members;
+    // TODO: std::vector<Transaction> transactions;
+
+public:
+    static Library* getInstance() {
+        if (library == nullptr) {
+            library = new Library();
+        }
+        return library;
+    }
+
+    void addBook(Book* book);
+
+    void addMember(Member* member);
+    
+    void issueBook(std::string isbn, std::string memberId);
+
+    void returnBook(std::string isbn, std::string memberId);
+};
