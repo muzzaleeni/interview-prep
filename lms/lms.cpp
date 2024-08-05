@@ -2,6 +2,8 @@
 #include <iostream>
 #include <vector>
 
+typedef std::string Date;
+
 class Book {
 protected:
     std::string title;
@@ -124,12 +126,38 @@ public:
     }
 };
 
+class Transaction {
+private:
+    std::string transactionId;
+    Book* book;
+    Member* member;
+    Date issueDate;
+    Date returnDate;
+
+public:
+    Transaction(std::string transactionId, Book* book, Member* member, Date issueDate, Date returnDate) {
+        this->transactionId = transactionId;
+        this->book = book;
+        this->member = member;
+        this->issueDate = issueDate;
+        this->returnDate = returnDate;
+    }
+
+    void displayInfo() {
+        std::cout << "Transaction ID:" << transactionId << "\n";
+        book->displayInfo();
+        member->displayInfo();
+        std:: cout << "Issue date: " << issueDate << "\n"
+                   << "Return date: " << returnDate << "\n\n";
+    }
+};
+
 class Library {
 private:
     static Library* library;
     std::vector<Book*> books;
     std::vector<Member*> members;
-    // TODO: std::vector<Transaction> transactions;
+    std::vector<Transaction> transactions;
 
 public:
     static Library* getInstance() {
@@ -139,9 +167,13 @@ public:
         return library;
     }
 
-    void addBook(Book* book);
+    void addBook(Book* book) {
+        books.push_back(book);
+    }
 
-    void addMember(Member* member);
+    void addMember(Member* member) {
+        members.push_back(member);
+    }
     
     void issueBook(std::string isbn, std::string memberId);
 
