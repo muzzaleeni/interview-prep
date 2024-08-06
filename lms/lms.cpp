@@ -99,7 +99,7 @@ private:
     std::string major;
 
 public:
-    Student(std::string name, int memberId, std::string email, int year, std:: string major) : Member(name, memberId, email) {
+    Student(std::string name, int memberId, std::string email, int year, std::string major) : Member(name, memberId, email) {
         this->year = year;
         this->major = major;
     };
@@ -200,5 +200,47 @@ public:
             }
         }
         book->setAvailability(true);
+    }
+};
+
+class Factory {
+public:
+    virtual Book* createBook() = 0;
+    virtual Member* createMember() = 0;
+};
+
+class BookFactory : public Factory {
+public:
+    virtual Book* createBook() = 0;
+};
+
+class RegularBookFactory : public BookFactory {
+public:
+    RegularBook* createBook(std::string title, std::string author, std::string isbn) {
+        return new RegularBook(title, author, isbn);
+    }
+};
+
+class ReferenceBookFactory : public BookFactory {
+public:
+    ReferenceBook* createBook(std::string title, std::string author, std::string isbn) {
+        return new ReferenceBook(title, author, isbn);
+    }
+};
+
+class MemberFactory : public Factory {
+public:
+    virtual Member* createMember() = 0;
+};
+
+class StudentMemberFactory : public MemberFactory {
+    Student* createMember(std::string name, int memberId, std::string email, int year, std::string major) {
+        return new Student(name, memberId, email, year, major);
+    }
+};
+
+class FacultyMemberFactory : public MemberFactory {
+    Faculty* createMember(std::string name, int memberId, std::string email, std::string department, std::string position) {
+        return new Faculty(name, memberId, email, department, position);
     }
 };
