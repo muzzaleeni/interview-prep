@@ -1,8 +1,9 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <memory>
 
-typedef std::string Date;
+using Date = std::string;
 
 int transactions_count;
 Date current_date;
@@ -42,12 +43,7 @@ public:
                   << status() << "\n\n";   
     }
 
-    Book(std::string title, std::string author, std::string isbn) {
-        this->title = title;
-        this->author = author;
-        this->isbn = isbn;
-        isAvailable = true;
-    }
+    Book(std::string title, std::string author, std::string isbn, bool canBeBorrowed) : title(title), author(author), isbn(isbn), canBeBorrowed(canBeBorrowed), isAvailable(true)  {}
 
     std::string status() {
         if (isAvailable && canBeBorrowed) {
@@ -56,7 +52,7 @@ public:
         else if (isAvailable && !canBeBorrowed) {
             return "This book can be issued, but not borrowed.";
         }
-        else if (isAvailable && !canBeBorrowed) {
+        else if (isAvailable && canBeBorrowed) {
             return "This book can't be issued, but can be borrowed.";
         }
         else {
@@ -71,9 +67,7 @@ public:
 
 class RegularBook : public Book {
 public:
-    RegularBook(std::string title, std::string author, std::string isbn) : Book(title, author, isbn) {
-        canBeBorrowed = true;
-    };
+    RegularBook(std::string title, std::string author, std::string isbn) : Book(title, author, isbn, true) {}
 
     void displayInfo() override {
         Book::displayInfo();  
@@ -83,9 +77,7 @@ public:
 
 class ReferenceBook : public Book {
 public:
-    ReferenceBook(std::string title, std::string author, std::string isbn) : Book(title, author, isbn) {
-        canBeBorrowed = false;
-    };
+    ReferenceBook(std::string title, std::string author, std::string isbn) : Book(title, author, isbn, false) {}
 
     void displayInfo() override {
         Book::displayInfo();
@@ -100,11 +92,7 @@ protected:
     std::string email;
 
 public:
-    Member(std::string name, int memberId, std::string email) {
-        this->name = name;
-        this->memberId = memberId;
-        this->email = email;
-    }
+    Member(std::string name, int memberId, std::string email) : name(name), memberId(memberId), email(email) {}
 
     int getMemberId() {
         return memberId;
@@ -165,13 +153,7 @@ private:
     Date returnDate;
 
 public:
-    Transaction(int transactionId, Book* book, Member* member, Date issueDate, Date returnDate) {
-        this->transactionId = transactionId;
-        this->book = book;
-        this->member = member;
-        this->issueDate = issueDate;
-        this->returnDate = returnDate;
-    }
+    Transaction(int transactionId, Book* book, Member* member, Date issueDate, Date returnDate) : transactionId(transactionId), book(book), member(member), issueDate(issueDate), returnDate(returnDate) {}
 
     Book* getBook() {
         return book;
@@ -192,25 +174,27 @@ public:
 
 class Library {
 private:
-    static Library* library;
-    std::vector<Book*> books;
-    std::vector<Member*> members;
+    static std::unique_ptr<Library> library;
+    std::vector<std::unique_ptr<Book>> books;
+    std::vector<std::unique_ptr<Member>> members;
     std::vector<Transaction> transactions;
+
+    Library() {}
 
 public:
     static Library* getInstance() {
-        if (library == nullptr) {
-            library = new Library();
+        if (!library) {
+            library.reset(new Library());
         }
-        return library;
+        return library.get();
     }
 
-    void addBook(Book* book) {
-        books.push_back(book);
+    void addBook(std::unique_ptr<Book> book) {
+        books.push_back(std::move(book));
     }
 
-    void addMember(Member* member) {
-        members.push_back(member);
+    void addMember(std::unique_ptr<Member> member) {
+        members.push_back(std::move(member));
     }
     
     void issueBook(Book* book, Member* member) {
@@ -230,45 +214,40 @@ public:
     }
 };
 
-class Factory {
-public:
-    virtual Book* createBook() = 0;
-    virtual Member* createMember() = 0;
-};
 
-class BookFactory : public Factory {
+class BookFactory {
 public:
-    virtual Book* createBook() = 0;
+    virtual std::unique_ptr<Book> createBook() = 0;
 };
 
 class RegularBookFactory : public BookFactory {
 public:
-    RegularBook* createBook(std::string title, std::string author, std::string isbn) {
-        return new RegularBook(title, author, isbn);
+    std::unique_ptr<Book> createBook(std::string title, std::string author, std::string isbn) {
+        return std::unique_ptr<RegularBook>(new RegularBook(title, author, isbn));
     }
 };
 
 class ReferenceBookFactory : public BookFactory {
 public:
-    ReferenceBook* createBook(std::string title, std::string author, std::string isbn) {
-        return new ReferenceBook(title, author, isbn);
+    std::unique_ptr<Book> createBook(std::string title, std::string author, std::string isbn) {
+        return std::unique_ptr<ReferenceBook>(new ReferenceBook(title, author, isbn));
     }
 };
 
-class MemberFactory : public Factory {
+class MemberFactory {
 public:
-    virtual Member* createMember() = 0;
+    virtual std::unique_ptr<Member> createMember() = 0;
 };
 
 class StudentMemberFactory : public MemberFactory {
-    Student* createMember(std::string name, int memberId, std::string email, int year, std::string major) {
-        return new Student(name, memberId, email, year, major);
+    std::unique_ptr<Member> createMember(std::string name, int memberId, std::string email, int year, std::string major) {
+        return std::unique_ptr<Student>(new Student(name, memberId, email, year, major));
     }
 };
 
 class FacultyMemberFactory : public MemberFactory {
-    Faculty* createMember(std::string name, int memberId, std::string email, std::string department, std::string position) {
-        return new Faculty(name, memberId, email, department, position);
+    std::unique_ptr<Member> createMember(std::string name, int memberId, std::string email, std::string department, std::string position) {
+        return std::unique_ptr<Faculty>(new Faculty(name, memberId, email, department, position));
     }
 };
 
