@@ -4,6 +4,9 @@
 
 typedef std::string Date;
 
+int transactions_count;
+Date current_date;
+
 class Book {
 protected:
     std::string title;
@@ -24,7 +27,7 @@ public:
         this->title = title;
         this->author = author;
         this->isbn = isbn;
-        setAvailability(true);
+        isAvailable = true;
     }
 
     std::string status() {
@@ -128,19 +131,27 @@ public:
 
 class Transaction {
 private:
-    std::string transactionId;
+    int transactionId;
     Book* book;
     Member* member;
     Date issueDate;
     Date returnDate;
 
 public:
-    Transaction(std::string transactionId, Book* book, Member* member, Date issueDate, Date returnDate) {
+    Transaction(int transactionId, Book* book, Member* member, Date issueDate, Date returnDate) {
         this->transactionId = transactionId;
         this->book = book;
         this->member = member;
         this->issueDate = issueDate;
         this->returnDate = returnDate;
+    }
+
+    Book* getBook() {
+        return book;
+    }
+
+    Member* getMember() {
+        return member;
     }
 
     void displayInfo() {
@@ -175,7 +186,19 @@ public:
         members.push_back(member);
     }
     
-    void issueBook(std::string isbn, std::string memberId);
+    void issueBook(Book* book, Member* member) {
+        transactions.push_back(Transaction(transactions_count, book, member, current_date, ""));
+        book->setAvailability(false);
+    }
 
-    void returnBook(std::string isbn, std::string memberId);
+    void returnBook(Book* book, Member* member) {
+        for (auto it = transactions.begin(); it != transactions.end(); ) {
+            if (it->getBook() == book && it->getMember() == member) {
+                it = transactions.erase(it); 
+            } else {
+                ++it; 
+            }
+        }
+        book->setAvailability(true);
+    }
 };
