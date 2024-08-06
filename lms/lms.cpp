@@ -14,8 +14,27 @@ protected:
     std::string isbn;
     bool isAvailable;
     bool canBeBorrowed;
+    std::vector<Member*> subscribers;
 
 public:
+    void add(Member* member) {
+        subscribers.push_back(member);
+    }
+    void remove(Member* member) {
+        for (auto it = subscribers.begin(); it != subscribers.end(); ) {
+            if ((*it)->getMemberId() == member->getMemberId()) {
+                it = subscribers.erase(it); 
+            } else {
+                ++it; 
+            }
+        }
+    }
+    void notify() {
+        for (Member*& subscriber : subscribers) {
+            subscriber->update();
+        }
+    }
+
     virtual void displayInfo() {
         std::cout << "Title: " << title << "\n"
                   << "Author: " << author << "\n"
@@ -87,9 +106,17 @@ public:
         this->email = email;
     }
 
+    int getMemberId() {
+        return memberId;
+    }
+
     virtual void displayInfo() {
         std::cout << "Name: " << name << "\n"
                   << "Member ID: " << memberId << "\n\n";
+    }
+
+    void update() {
+        std::cout << "Member with " << memberId << " id got notified\n\n";
     }
 };
 
@@ -244,3 +271,4 @@ class FacultyMemberFactory : public MemberFactory {
         return new Faculty(name, memberId, email, department, position);
     }
 };
+
